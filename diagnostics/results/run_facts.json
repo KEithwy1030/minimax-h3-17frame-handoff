@@ -1,0 +1,240 @@
+{
+  "weight_path": "D:\\MinmaxH3\\runs\\official_fp32_vae\\model.safetensors",
+  "weight_bytes": 10415548320,
+  "weight_note": "两套解码用的是同一份权重：`D:\\MinmaxH3\\runs\\official_fp32_vae\\model.safetensors`（官方 Ref2VA/video_vae/source/model.safetensors，10415548320 字节）。读入时逐张量从 fp32 转成 fp16，因为 RTX 3060 12GB 放不下 fp32 解码。",
+  "skipped_keys": [],
+  "latent_shape": [
+    1,
+    24,
+    37,
+    38,
+    66
+  ],
+  "torch": "2.11.0+cu130",
+  "cuda": "13.0",
+  "gpu": "NVIDIA GeForce RTX 3060",
+  "compute_dtype": "float16",
+  "comfy_missing_keys": [],
+  "comfy_missing_count": 0,
+  "comfy_extra_count": 0,
+  "comfy_param_dtype": "torch.float16",
+  "context_seams": [
+    {
+      "frame": 0,
+      "luma": 68.74476623535156,
+      "delta_vs_prev": null
+    },
+    {
+      "frame": 17,
+      "luma": 70.49873352050781,
+      "delta_vs_prev": -0.005736987353191314
+    },
+    {
+      "frame": 34,
+      "luma": 68.89208984375,
+      "delta_vs_prev": -0.06897801074975023
+    },
+    {
+      "frame": 51,
+      "luma": 67.96711730957031,
+      "delta_vs_prev": -0.06642727362088584
+    },
+    {
+      "frame": 68,
+      "luma": 68.91695404052734,
+      "delta_vs_prev": -0.07011876285034546
+    },
+    {
+      "frame": 85,
+      "luma": 69.80271911621094,
+      "delta_vs_prev": -0.05242828933618272
+    },
+    {
+      "frame": 102,
+      "luma": 68.26678466796875,
+      "delta_vs_prev": -0.06667862715810378
+    },
+    {
+      "frame": 119,
+      "luma": 68.31599426269531,
+      "delta_vs_prev": -0.06243980124923369
+    }
+  ],
+  "comfy_seams": [
+    {
+      "frame": 0,
+      "luma": 68.74476623535156,
+      "delta_vs_prev": null
+    },
+    {
+      "frame": 17,
+      "luma": 70.49873352050781,
+      "delta_vs_prev": -0.005736987353191314
+    },
+    {
+      "frame": 34,
+      "luma": 69.93435668945312,
+      "delta_vs_prev": -0.012788125933207944
+    },
+    {
+      "frame": 51,
+      "luma": 69.12458038330078,
+      "delta_vs_prev": -0.00611667961268781
+    },
+    {
+      "frame": 68,
+      "luma": 70.07190704345703,
+      "delta_vs_prev": -0.01215618801080335
+    },
+    {
+      "frame": 85,
+      "luma": 70.85306549072266,
+      "delta_vs_prev": -0.0043877531001210255
+    },
+    {
+      "frame": 102,
+      "luma": 69.54386138916016,
+      "delta_vs_prev": -0.01081378953501508
+    },
+    {
+      "frame": 119,
+      "luma": 69.30490112304688,
+      "delta_vs_prev": -0.006786354690575115
+    }
+  ],
+  "official_missing_count": 0,
+  "official_unexpected_count": 0,
+  "official_missing_head": [],
+  "official_clip_length": 17,
+  "official_token_drop": 3,
+  "official_decoder_tiling": true,
+  "official_seams": [
+    {
+      "frame": 0,
+      "luma": 68.72772216796875,
+      "delta_vs_prev": null
+    },
+    {
+      "frame": 17,
+      "luma": 70.48101043701172,
+      "delta_vs_prev": -0.005757682892638877
+    },
+    {
+      "frame": 34,
+      "luma": 69.91707611083984,
+      "delta_vs_prev": -0.012801136356291563
+    },
+    {
+      "frame": 51,
+      "luma": 69.1070327758789,
+      "delta_vs_prev": -0.006128146969315266
+    },
+    {
+      "frame": 68,
+      "luma": 70.05437469482422,
+      "delta_vs_prev": -0.012173221344373153
+    },
+    {
+      "frame": 85,
+      "luma": 70.83546447753906,
+      "delta_vs_prev": -0.004403998620573698
+    },
+    {
+      "frame": 102,
+      "luma": 69.5262451171875,
+      "delta_vs_prev": -0.010827129662766286
+    },
+    {
+      "frame": 119,
+      "luma": 69.2870864868164,
+      "delta_vs_prev": -0.006805901553933259
+    }
+  ],
+  "comfy_tokens": [
+    {
+      "tokens": 7,
+      "out_frames": 28
+    },
+    {
+      "tokens": 7,
+      "out_frames": 28
+    },
+    {
+      "tokens": 7,
+      "out_frames": 28
+    },
+    {
+      "tokens": 7,
+      "out_frames": 28
+    },
+    {
+      "tokens": 7,
+      "out_frames": 28
+    },
+    {
+      "tokens": 7,
+      "out_frames": 28
+    },
+    {
+      "tokens": 7,
+      "out_frames": 28
+    }
+  ],
+  "official_tokens": [
+    {
+      "tokens": 7,
+      "out_frames": 28
+    },
+    {
+      "tokens": 7,
+      "out_frames": 28
+    },
+    {
+      "tokens": 7,
+      "out_frames": 28
+    },
+    {
+      "tokens": 7,
+      "out_frames": 28
+    },
+    {
+      "tokens": 7,
+      "out_frames": 28
+    },
+    {
+      "tokens": 7,
+      "out_frames": 28
+    },
+    {
+      "tokens": 7,
+      "out_frames": 28
+    }
+  ],
+  "full_decode_source": "official AutoencoderKLLegacy.decode_temporal",
+  "roundtrip": {
+    "ok": true,
+    "side": 128,
+    "notes": [
+      "256×256 的整段一次编码会占满 12GB 显存，跑了 20 分钟仍未返回。三种往返都改在 128×128 上做，帧数仍是 124。"
+    ],
+    "latent_t_one": 31,
+    "dark_oneshot": [
+      12,
+      16,
+      100,
+      104
+    ],
+    "dark_chunked": [],
+    "dark_context": [
+      34,
+      51,
+      68,
+      85,
+      102,
+      119
+    ],
+    "n_oneshot": 124,
+    "n_chunked": 124,
+    "n_context": 124
+  }
+}
