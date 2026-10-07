@@ -1,5 +1,7 @@
 # 带上下文的分块解码
 
+说明：预热帧对齐有误，使接缝前一帧被提亮，结果不可用。
+
 没有改 `D:\MinmaxH3\ComfyUI\comfy\ldm\minimax\vae.py`。实验代码在 `diagnostics/scripts/decode_with_context.py`。
 每个块额外带上前一块最后 2 个 latent token，解码后丢掉这 2 个 token 对应的帧，当前块仍按原版的 frame_pre_padding 和 overlap 写出。第 0 块前面没有 token，不带上下文。
 权重、latent、空间范围和同一次 ComfyUI 原版 `decode` 相同。权重文件是官方 `D:\MinmaxH3\runs\official_fp32_vae\model.safetensors`，读入时转成 fp16。

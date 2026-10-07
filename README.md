@@ -4,11 +4,16 @@
 
 ## 结论
 
-暗帧在 **ComfyUI 生成出来的 latent** 里。用 MiniMax 官方 VAE 源码、加载本地同一套 VAE 权重，解码这份 latent，第 17 帧仍然暗约 36%。
+暗帧出现在本地 `minimax_h3_video_vae_fp16.safetensors` 的解码输出里。不能再说暗帧在采样出来的 latent 里。
 
-因此这不是「ComfyUI 独有的拼帧算法」单独能解释的。官方解码函数解同一份 latent，结果同样暗。
+会闪的运行用的是 `diagnostics/src/workflows/h3_cmp_22frame_pruned_api.json`（640×384，22 帧，pruned ref2va）。复测前 `comfy/sd.py` 已恢复成 commit `8a33128`。这次在 VAEDecode 前保存的 latent 是 `[1, 24, 7, 24, 40]`。同一份 latent：
 
-MiniMax 自己发布的样片 `t2va_2k.mp4` 没有这个周期（见 ComfyUI issue #15426）。那是他们整套程序生成的片子，不是拿下面这份 latent 去解。
+- 本地 fp16 VAE 解码：第 16→17 帧全帧亮度 61.01 → 42.44，下降 30.4%。4×4 共 16 格全部变暗，降幅 19.4%–42.2%。蓝通道比红通道降得更多。
+- 官方 `Ref2VA/video_vae/source/model.safetensors`（读入后 fp16）解码：第 16→17 帧 57.86 → 57.48，下降 0.66%。
+
+`seg_0000.av.pt` 不是这次会闪运行的 latent。那是另一次 1056×608 生成的缓存。整份用官方权重解码时，第 17 帧只暗约 0.6%，没有复现大约 30% 的下跌。细节在 `diagnostics/results/flash_run.md`。
+
+MiniMax 自己发布的样片 `t2va_2k.mp4` 没有这个周期（见 ComfyUI issue #15426）。
 
 ## 现象
 
@@ -19,7 +24,7 @@ MiniMax 自己发布的样片 `t2va_2k.mp4` 没有这个周期（见 ComfyUI iss
 
 ## 已测量
 
-同一 latent：`D:\MinmaxH3\ComfyUI\output\minimax_seg_cache\12\seg_0000.av.pt`  
+下面这张表不是会闪运行的 latent。文件是 `D:\MinmaxH3\ComfyUI\output\minimax_seg_cache\12\seg_0000.av.pt`  
 形状：`samples` 视频支路 `[1, 24, 37, 38, 66]` float32。对应成片约 1056×608、124 帧。
 
 用官方 `AutoencoderKLLegacy.decode_temporal`（`clip_length=17`，`token_drop=3`），空间只取中心 8×8 latent（128×128 像素），权重用本地 `minimax_h3_video_vae_fp16.safetensors`（去掉 `latents_mean` / `latents_std` 后 `load_state_dict` 缺失 0、多余 0）：
@@ -35,7 +40,7 @@ MiniMax 自己发布的样片 `t2va_2k.mp4` 没有这个周期（见 ComfyUI iss
 | 118 → 119 | 111 → 72 | −35.3% |
 
 官方源码：`https://huggingface.co/MiniMaxAI/MiniMax-H3/tree/main/Ref2VA/video_vae`  
-本地副本：`D:\MinmaxH3\runs\official_vae\`（只有源码，没有 10GB 的 `source/model.safetensors`）。
+本地源码副本：`D:\MinmaxH3\runs\official_vae\`。官方权重在 `D:\MinmaxH3\runs\official_fp32_vae\model.safetensors`（10415548320 字节），没有放进仓库。
 
 ## 对照：瘦身版和完整版都会闪
 
@@ -60,11 +65,9 @@ ComfyUI 原始解码（无补亮度、无淡入淡出）。同一张参考图 `C
 - 空间 tiled decode 节点。测试用的是普通 `VAEDecode`。H3 VAE 内部仍会做时间分块。
 - 整帧乘一个亮度、或把接缝 4 帧做淡入淡出。前者会让接缝局部过亮，后者肉眼是渐变。都不要再做。
 
-## 还没分开的一点
+## 已经分开的一点
 
-静止图如果 **整段一次编码**（不按 17 帧切开）再解码，只有第 0 帧偏暗，第 17 帧不再暗。按 17 帧分段编码再解码，第 17 帧会暗。
-
-生成出来的 latent 用官方 `decode_temporal` 解，表现和「分段编码」一样。还没有用 MiniMax 官方 10GB `Ref2VA/video_vae/source/model.safetensors` 重解；这次用的是 Comfy 版 fp16 权重，键和官方类一致。
+会闪运行自己的 latent，用官方 10GB 权重整段解码，第 17 帧没有大约 30% 的下跌。用本地 fp16 权重解同一份 latent，下跌还在。`seg_0000` 和这次 latent 不是同一份。
 
 ## 代码位置
 
@@ -82,4 +85,4 @@ ComfyUI：`D:\MinmaxH3\ComfyUI`，commit `8a33128`（`Improve some warning messa
 
 ## 建议的下一步
 
-不要再改像素。拿官方 `decode_temporal` 和 ComfyUI `decode_temporal` 对 **同一 latent、同一权重** 逐项对比切帧下标。官方源码已在 `D:\MinmaxH3\runs\official_vae\klvae.py` 的 `decode_temporal`。若两套切帧一致且都暗，就去查采样产出的 latent，而不是解码拼帧。
+不要再改像素，也不要补亮度或做淡入淡出。同一份会闪 latent 上，本地 fp16 解码暗 30.4%，官方权重解码暗 0.66%。两边切帧下标在更早的 124 帧对照里是一致的，见 `diagnostics/results/decode_slicing.md`。
