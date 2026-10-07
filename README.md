@@ -4,16 +4,19 @@
 
 ## 结论
 
-暗帧出现在本地 `minimax_h3_video_vae_fp16.safetensors` 的解码输出里。不能再说暗帧在采样出来的 latent 里。
+暗帧来自本地 fp16 VAE 权重文件。官方权重解同一 latent 不暗。
 
-会闪的运行用的是 `diagnostics/src/workflows/h3_cmp_22frame_pruned_api.json`（640×384，22 帧，pruned ref2va）。复测前 `comfy/sd.py` 已恢复成 commit `8a33128`。这次在 VAEDecode 前保存的 latent 是 `[1, 24, 7, 24, 40]`。同一份 latent：
+- A：`D:\MinmaxH3\ComfyUI\models\vae\minimax_h3_video_vae_fp16.safetensors`，5207808496 字节。这是原来会闪的 ComfyUI 视频 VAE。
+- B：`D:\MinmaxH3\runs\official_fp32_vae\model.safetensors`，10415548320 字节。来自 Hugging Face `MiniMaxAI/MiniMax-H3` 的 `Ref2VA/video_vae/source/model.safetensors`。
 
-- 本地 fp16 VAE 解码：第 16→17 帧全帧亮度 61.01 → 42.44，下降 30.4%。4×4 共 16 格全部变暗，降幅 19.4%–42.2%。蓝通道比红通道降得更多。
-- 官方 `Ref2VA/video_vae/source/model.safetensors`（读入后 fp16）解码：第 16→17 帧 57.86 → 57.48，下降 0.66%。
+B 先转成 fp16 再和 A 比。560 个共有键里 557 个完全相同。有差异的只有 3 个：`decoder.transformer_blocks.0.attn.to_out.bias`、`decoder.transformer_blocks.0.attn.to_out.weight`、`decoder.register_tokens`。A 另外多了 `latents_mean` / `latents_std`，它们和 `vae.py` 里写死的数只差 fp16 舍入。明细在 `diagnostics/results/vae_weight_diff.md`。
 
-`seg_0000.av.pt` 不是这次会闪运行的 latent。那是另一次 1056×608 生成的缓存。整份用官方权重解码时，第 17 帧只暗约 0.6%，没有复现大约 30% 的下跌。细节在 `diagnostics/results/flash_run.md`。
+用 B 转成的 fp16，加上 `vae.py` 里的 `latents_mean` / `latents_std`，保存为 `D:\MinmaxH3\ComfyUI\models\vae\minimax_h3_video_vae_official_fp16.safetensors`（5207808592 字节，没有放进仓库）。工作流只换这个 VAE：
 
-MiniMax 自己发布的样片 `t2va_2k.mp4` 没有这个周期（见 ComfyUI issue #15426）。
+- 22 帧、640×384、pruned ref2va、种子 1：第 15–19 帧亮度 57.70、57.88、57.50、57.75、57.83。第 16→17 帧下降 0.66%。
+- 124 帧、864×480、同一套采样设置：第 17/34/51/68/85/102/119 帧相对前一帧的变化是 -0.63%、-0.59%、-0.70%、-0.80%、-0.61%、-0.59%、-0.50%。
+
+会闪运行自己的 latent 用本地文件解码时，第 16→17 帧是 61.01 → 42.44，下降 30.4%。`seg_0000.av.pt` 不是那份 latent。MiniMax 样片 `t2va_2k.mp4` 没有这个周期（见 ComfyUI issue #15426）。
 
 ## 现象
 
@@ -75,7 +78,7 @@ ComfyUI：`D:\MinmaxH3\ComfyUI`，commit `8a33128`（`Improve some warning messa
 `comfy/ldm/minimax/vae.py` 的 `decode_temporal` 当前与该 commit 一致，没有本地补丁。
 
 模型里 17 帧一组的定义：`comfy/ldm/minimax/model.py` 的 `FRAME_PER_TOKEN = (1, 4, 4, 4, 4)`。  
-完整版权重才走 `t_emb = self.time_embedder(t_vals).to(dtype)`（约第 717 行）。pruned 走 `use_adaln_curves` 查表，不走这一行。两边生成结果仍然同样暗。
+完整版权重才走 `t_emb = self.time_embedder(t_vals).to(dtype)`（约第 717 行）。pruned 走 `use_adaln_curves` 查表，不走这一行。当时两边都用本地 fp16 VAE，生成结果同样暗。
 
 ## GitHub
 
@@ -85,4 +88,4 @@ ComfyUI：`D:\MinmaxH3\ComfyUI`，commit `8a33128`（`Improve some warning messa
 
 ## 建议的下一步
 
-不要再改像素，也不要补亮度或做淡入淡出。同一份会闪 latent 上，本地 fp16 解码暗 30.4%，官方权重解码暗 0.66%。两边切帧下标在更早的 124 帧对照里是一致的，见 `diagnostics/results/decode_slicing.md`。
+生成时用 `minimax_h3_video_vae_official_fp16.safetensors`。不要再改像素，也不要补亮度或做淡入淡出。

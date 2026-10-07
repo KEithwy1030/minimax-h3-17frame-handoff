@@ -1,0 +1,7 @@
+category,key,shape_a,shape_b,dtype_a,dtype_b,max_abs,rel_l2,note
+only_A,latents_mean,"(24,)",,float16,,0.00040888786,,compared with vae.py literal; max_abs is that gap
+only_A,latents_std,"(24,)",,float16,,0.00083565712,,compared with vae.py literal; max_abs is that gap
+nan_inf_or_zero,decoder.mask_token,"(1, 1, 2048)","(1, 1, 2048)",F16,F32,,,nan_or_inf A=False B=False; all_zero A=True B=True; decoder token
+top_diff,decoder.transformer_blocks.0.attn.to_out.bias,"(2048,)","(2048,)",F16,F32,0.090644836,6.1108138,
+top_diff,decoder.register_tokens,"(1, 4, 2048)","(1, 4, 2048)",F16,F32,0.11483765,1.8699463,decoder token
+top_diff,decoder.transformer_blocks.0.attn.to_out.weight,"(2048, 2048)","(2048, 2048)",F16,F32,0.16429138,1.3688639,

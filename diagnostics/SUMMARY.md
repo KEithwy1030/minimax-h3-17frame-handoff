@@ -33,3 +33,14 @@ ComfyUI 和官方 `decode_temporal` 的切片公式一致，实际调用也一�
 ## 会闪运行
 
 `comfy/sd.py` 恢复成 `8a33128` 之后，22 帧 pruned 工作流的 VAEDecode 输出仍然闪。第 16→17 帧全帧 Y 从 61.01 到 42.44，下降 30.4%。16 个 4×4 分区全部变暗。同一份 latent 用官方权重解码，第 16→17 帧从 57.86 到 57.48，下降 0.66%。这份 latent 不是 `seg_0000`。
+
+## 权重差异和换上官方 fp16 之后
+
+暗帧来自本地 fp16 VAE 权重文件。官方权重解同一 latent 不暗。
+
+A 是 `minimax_h3_video_vae_fp16.safetensors`，5207808496 字节，ComfyUI 原来的视频 VAE。B 是官方 `Ref2VA/video_vae/source/model.safetensors`，10415548320 字节。B 转 fp16 后，560 个共有键里只有 3 个不同：decoder 第 0 层 `attn.to_out` 的 bias 和 weight，以及 `decoder.register_tokens`。
+
+新文件 `minimax_h3_video_vae_official_fp16.safetensors`（5207808592 字节）由 B 逐张量转成 fp16，并写入 `vae.py` 里的 `latents_mean` / `latents_std`。只换 VAE 再跑：
+
+- 22 帧：第 15–19 帧亮度 57.70、57.88、57.50、57.75、57.83。第 16→17 帧下降 0.66%。
+- 124 帧：第 17/34/51/68/85/102/119 帧相对前一帧是 -0.63%、-0.59%、-0.70%、-0.80%、-0.61%、-0.59%、-0.50%。
